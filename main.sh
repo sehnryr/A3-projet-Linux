@@ -44,3 +44,8 @@ done < "$script_path/accounts.csv"
 mkdir /home/shared
 chown root:root /home/shared
 chmod 755 /home/shared # Permissions par défaut
+
+# Création du répertoire "saves" sur la machine distante
+ssh "$SERVER_USER@$SERVER_IP" mkdir /home/saves 
+ssh "$SERVER_USER@$SERVER_IP" chown root:root /home/saves 
+ssh "$SERVER_USER@$SERVER_IP" chmod 777 /home/saves
