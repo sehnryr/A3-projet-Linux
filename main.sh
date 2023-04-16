@@ -15,7 +15,7 @@ while IFS=';' read -r name surname mail password; do
     fi
 
     # Création du nom d'utilisateur en minuscule et en remplaçant les espaces par des tirets
-    username=$(echo "$name" | tr '[:upper:]' '[:lower:]' | head -c 1)$(echo "$surname" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
+    username=$("$(echo "$name" | cut -c 1)$surname" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
 
     # Affichage du nom d'utilisateur pour indiquer le début de la création de l'utilisateur
     echo "Creating user $username"
