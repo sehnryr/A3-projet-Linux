@@ -1,5 +1,9 @@
 #!/bin/sh
 
+SERVER_USER="ymeloi25"
+SERVER_IP="10.30.48.100"
+EMAIL="youn@melois.dev"
+
 # get the path of the script
 script_path=$(dirname "$(realpath "$0")")
 
@@ -31,6 +35,8 @@ while IFS=';' read -r name surname mail password; do
     mkdir "/home/$username/a_sauver"
     chown "$username:$username" "/home/$username/a_sauver"
     chmod 755 "/home/$username/a_sauver" # default permissions
+
+    # TODO: send an email to $EMAIL with the username and the password of the user
 
 done < "$script_path/accounts.csv"
 
