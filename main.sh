@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # get the path of the script
-script_path=$(dirname $(realpath $0))
+script_path=$(dirname "$(realpath "$0")")
 
 # read the file accounts.csv and create the users
 while IFS=';' read -r name surname mail password; do
@@ -18,19 +18,19 @@ while IFS=';' read -r name surname mail password; do
 
     # create the user
     useradd --create-home \
-        --home-dir /home/$username \
-        $username
+        --home-dir "/home/$username" \
+        "$username"
 
     # set the password for the user
     echo "$username:$password" | chpasswd
 
     # force the user to change the password at the first login
-    passwd --quiet --expire $username
+    passwd --quiet --expire "$username"
 
     # create the directory "a_sauver" in the home directory of the user
-    mkdir /home/$username/a_sauver
-    chown $username:$username /home/$username/a_sauver
-    chmod 755 /home/$username/a_sauver # default permissions
+    mkdir "/home/$username/a_sauver"
+    chown "$username:$username" "/home/$username/a_sauver"
+    chmod 755 "/home/$username/a_sauver" # default permissions
 
 done < "$script_path/accounts.csv"
 
