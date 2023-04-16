@@ -4,43 +4,43 @@ SERVER_USER="ymeloi25"
 SERVER_IP="10.30.48.100"
 EMAIL="youn@melois.dev"
 
-# get the path of the script
+# Récupération du chemin du script
 script_path=$(dirname "$(realpath "$0")")
 
-# read the file accounts.csv and create the users
+# Lecture du fichier accounts.csv ligne par ligne et création des utilisateurs
 while IFS=';' read -r name surname mail password; do
-    # skip the first line
+    # On ignore la première ligne du fichier contenant les noms des colonnes
     if [ "$name" = "Name" ]; then
         continue
     fi
 
-    # store the username in a variable
+    # Création du nom d'utilisateur en minuscule et en remplaçant les espaces par des tirets
     username=$(echo "$name" | tr '[:upper:]' '[:lower:]' | head -c 1)$(echo "$surname" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
 
-    # print the username
+    # Affichage du nom d'utilisateur pour indiquer le début de la création de l'utilisateur
     echo "Creating user $username"
 
-    # create the user
-    useradd --create-home \
-        --home-dir "/home/$username" \
-        "$username"
+    # Création de l'utilisateur
+    useradd --create-home --home-dir "/home/$username" "$username"
 
-    # set the password for the user
+    # Modification du mot de passe de l'utilisateur
     echo "$username:$password" | chpasswd
 
-    # force the user to change the password at the first login
+    # Expiration du mot de passe de l'utilisateur
+    # pour forcer la modification du mot de passe à la première connexion
     passwd --quiet --expire "$username"
 
-    # create the directory "a_sauver" in the home directory of the user
+    # Création du répertoire "a_sauver" dans le répertoire personnel de l'utilisateur
     mkdir "/home/$username/a_sauver"
     chown "$username:$username" "/home/$username/a_sauver"
-    chmod 755 "/home/$username/a_sauver" # default permissions
+    chmod 755 "/home/$username/a_sauver" # Permissions par défaut
 
-    # TODO: send an email to $EMAIL with the username and the password of the user
+    # TODO: envoyer un mail à EMAIL avec les informations de connexion de l'utilisateur
 
 done < "$script_path/accounts.csv"
 
-# create the directory "shared" in the /home directory owned by root with all permissions for everyone
+# Création du répertoire "shared" dans le répertoire /home appartenant à root
+# avec tous les droits pour tout le monde
 mkdir /home/shared
 chown root:root /home/shared
-chmod 755 /home/shared # default permissions
+chmod 755 /home/shared # Permissions par défaut
