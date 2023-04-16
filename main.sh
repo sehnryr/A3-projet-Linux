@@ -7,6 +7,17 @@ EMAIL="youn@melois.dev"
 # Récupération du chemin du script
 script_path=$(dirname "$(realpath "$0")")
 
+# Création du répertoire "shared" dans le répertoire /home appartenant à root
+# avec tous les droits pour tout le monde
+mkdir /home/shared
+chown root:root /home/shared
+chmod 755 /home/shared # Permissions par défaut
+
+# Création du répertoire "saves" sur la machine distante
+ssh "$SERVER_USER@$SERVER_IP" mkdir /home/saves 
+ssh "$SERVER_USER@$SERVER_IP" chown root:root /home/saves 
+ssh "$SERVER_USER@$SERVER_IP" chmod 777 /home/saves
+
 # Lecture du fichier accounts.csv ligne par ligne et création des utilisateurs
 while IFS=';' read -r name surname mail password; do
     # On ignore la première ligne du fichier contenant les noms des colonnes
@@ -38,14 +49,3 @@ while IFS=';' read -r name surname mail password; do
     # TODO: envoyer un mail à EMAIL avec les informations de connexion de l'utilisateur
 
 done < "$script_path/accounts.csv"
-
-# Création du répertoire "shared" dans le répertoire /home appartenant à root
-# avec tous les droits pour tout le monde
-mkdir /home/shared
-chown root:root /home/shared
-chmod 755 /home/shared # Permissions par défaut
-
-# Création du répertoire "saves" sur la machine distante
-ssh "$SERVER_USER@$SERVER_IP" mkdir /home/saves 
-ssh "$SERVER_USER@$SERVER_IP" chown root:root /home/saves 
-ssh "$SERVER_USER@$SERVER_IP" chmod 777 /home/saves
