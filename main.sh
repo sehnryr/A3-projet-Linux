@@ -18,6 +18,34 @@ ssh "$SERVER_USER@$SERVER_IP" mkdir /home/saves
 ssh "$SERVER_USER@$SERVER_IP" chown root:root /home/saves 
 ssh "$SERVER_USER@$SERVER_IP" chmod 777 /home/saves
 
+# Création du script de restauration de sauvegarde
+cat << EOF > /home/retablir_sauvegarde
+#!/bin/sh
+
+# Récupération de l'utilisateur courant
+username=\$(whoami)
+
+# Récupération de la sauvegarde du répertoire "a_sauver" de l'utilisateur
+scp -p $SERVER_USER@$SERVER_IP:/home/saves/save-\$username.tgz /home/\$username/save-\$username.tgz
+
+# Si la sauvegarde n'existe pas, on arrête le script
+if [ ! -f /home/\$username/save-\$username.tgz ]; then
+    echo "Aucune sauvegarde n'a été trouvée"
+    exit 1
+fi
+
+# Suppression du contenu du répertoire "a_sauver" de l'utilisateur
+rm -rf /home/\$username/a_sauver/*
+
+# Extraction de la sauvegarde dans le répertoire "a_sauver" de l'utilisateur
+tar -xzf /home/\$username/save-\$username.tgz --directory=/home/\$username/a_sauver .
+
+# Suppression de la sauvegarde
+rm /home/\$username/save-\$username.tgz
+EOF
+chown root:root /home/retablir_sauvegarde
+chmod 755 /home/retablir_sauvegarde
+
 # Lecture du fichier accounts.csv ligne par ligne et création des utilisateurs
 while IFS=';' read -r name surname mail password; do
     # On ignore la première ligne du fichier contenant les noms des colonnes
