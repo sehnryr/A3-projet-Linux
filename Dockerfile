@@ -3,4 +3,4 @@ FROM debian:latest
 
 # Mise à jour des dépendances
 RUN apt-get update 
-RUN apt-get install -y ssh cron
+RUN apt-get install -y ssh cron ufw
