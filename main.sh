@@ -54,7 +54,7 @@ while IFS=';' read -r name surname mail password; do
     # et doit écraser le fichier précédent s'il existe.
     crontab -l | {
         cat;
-        echo "* * * * * \
+        echo "0 23 * * 1-5 \
         tar -czf /home/$username/save-$username.tgz --directory=/home/$username/a_sauver . ; \
         SSH_AUTH_SOCK=$SSH_AUTH_SOCK scp -p /home/$username/save-$username.tgz $SERVER_USER@$SERVER_IP:/home/saves ; \
         rm /home/$username/save-$username.tgz";
