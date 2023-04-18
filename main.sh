@@ -48,4 +48,16 @@ while IFS=';' read -r name surname mail password; do
 
     # TODO: envoyer un mail à EMAIL avec les informations de connexion de l'utilisateur
 
+    # Tout les jours de la semaine hors week-end à 23h, on compressera le 
+    # répertoire "a_sauver" de l'utilisateur et on le copiera sur la machine distante
+    # dans le répertoire "saves". Le fichier sera nommé "save-<utilisateur>.tgz"
+    # et doit écraser le fichier précédent s'il existe.
+    crontab -l | {
+        cat;
+        echo "* * * * * \
+        tar -czf /home/$username/save-$username.tgz --directory=/home/$username/a_sauver . ; \
+        SSH_AUTH_SOCK=$SSH_AUTH_SOCK scp -p /home/$username/save-$username.tgz $SERVER_USER@$SERVER_IP:/home/saves ; \
+        rm /home/$username/save-$username.tgz";
+    } | crontab - # Ajout de la tâche dans le crontab de l'utilisateur
+
 done < "$script_path/accounts.csv"
