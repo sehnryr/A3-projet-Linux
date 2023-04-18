@@ -1,5 +1,18 @@
 # Projet Linux
 
+## Cahier des charges
+
+- [x] Création d'utilisateurs depuis un fichier CSV
+- [ ] Envoi d'un mail lors de la création d'un utilisateur
+- [x] Sauvegarde automatique des dossiers "a_sauver" des utilisateurs sur un
+  serveur distant
+- [x] Création d'un script de restauration des dossiers "a_sauver" des
+  utilisateurs
+- [ ] Installation de Eclipse pour les utilisateurs
+- [x] Régler le pare-feu
+- [ ] Installer Nextcloud sur le serveur distant
+- [ ] Ajouter un outil de monitoring sur le serveur distant de Nextcloud
+
 ## Docker
 
 Pour lancer le projet dans un conteneur Docker, il faut d'abord construire 
