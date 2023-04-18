@@ -87,9 +87,8 @@ while IFS=';' read -r name surname mail password; do
     crontab -l | {
         cat;
         echo "0 23 * * 1-5 \
-        tar -czf /home/$username/save-$username.tgz --directory=/home/$username/a_sauver . ; \
-        SSH_AUTH_SOCK=$SSH_AUTH_SOCK scp -p /home/$username/save-$username.tgz $SERVER_USER@$SERVER_IP:/home/saves ; \
-        rm /home/$username/save-$username.tgz";
+        tar -cz --directory=/home/$username/a_sauver . | \
+        SSH_AUTH_SOCK=$SSH_AUTH_SOCK ssh $SERVER_USER@$SERVER_IP 'cat > /home/saves/save-$username.tgz'";
     } | crontab - # Ajout de la tâche dans le crontab de l'utilisateur
 
 done < "$script_path/accounts.csv"
