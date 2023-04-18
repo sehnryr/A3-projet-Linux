@@ -50,6 +50,14 @@ chmod 755 /home/retablir_sauvegarde
 ufw deny ftp
 ufw deny proto udp from any to any
 
+# Installation de Nextcloud sur le serveur distant
+ssh "$SERVER_USER@$SERVER_IP" mkdir -p /var/www
+ssh "$SERVER_USER@$SERVER_IP" curl -s https://download.nextcloud.com/server/releases/latest.tar.bz2 | tar -xjf - -C /var/www
+ssh "$SERVER_USER@$SERVER_IP" chown -R www-data:www-data /var/www/nextcloud
+ssh "$SERVER_USER@$SERVER_IP" sudo -u www-data php /var/www/nextcloud/occ maintenance:install \
+    --admin-user "nextcloud-admin" \
+    --admin-pass "N3x+_Cl0uD"
+
 # Lecture du fichier accounts.csv ligne par ligne et création des utilisateurs
 while IFS=';' read -r name surname mail password; do
     # On ignore la première ligne du fichier contenant les noms des colonnes
