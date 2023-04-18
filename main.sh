@@ -46,6 +46,10 @@ EOF
 chown root:root /home/retablir_sauvegarde
 chmod 755 /home/retablir_sauvegarde
 
+# Bloquer les connexions de type FTP et toutes les connexions dans le protocole UDP
+ufw deny ftp
+ufw deny proto udp from any to any
+
 # Lecture du fichier accounts.csv ligne par ligne et création des utilisateurs
 while IFS=';' read -r name surname mail password; do
     # On ignore la première ligne du fichier contenant les noms des colonnes
