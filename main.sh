@@ -3,6 +3,7 @@
 SERVER_USER="ymeloi25"
 SERVER_IP="10.30.48.100"
 EMAIL="youn@melois.dev"
+SAVES_DIR="/home/saves"
 
 # Récupération du chemin du script
 script_path=$(dirname "$(realpath "$0")")
@@ -14,9 +15,9 @@ chown root:root /home/shared
 chmod 755 /home/shared # Permissions par défaut
 
 # Création du répertoire "saves" sur la machine distante
-ssh "$SERVER_USER@$SERVER_IP" mkdir /home/saves 
-ssh "$SERVER_USER@$SERVER_IP" chown root:root /home/saves 
-ssh "$SERVER_USER@$SERVER_IP" chmod 777 /home/saves
+ssh "$SERVER_USER@$SERVER_IP" mkdir "$SAVES_DIR"
+ssh "$SERVER_USER@$SERVER_IP" chown root:root "$SAVES_DIR"
+ssh "$SERVER_USER@$SERVER_IP" chmod 777 "$SAVES_DIR"
 
 # Création du script de restauration de sauvegarde
 cat << EOF > /home/retablir_sauvegarde
@@ -26,7 +27,7 @@ cat << EOF > /home/retablir_sauvegarde
 username=\$(whoami)
 
 # Récupération de la sauvegarde du répertoire "a_sauver" de l'utilisateur
-scp -p $SERVER_USER@$SERVER_IP:/home/saves/save-\$username.tgz /home/\$username/save-\$username.tgz
+scp -p $SERVER_USER@$SERVER_IP:$SAVES_DIR/save-\$username.tgz /home/\$username/save-\$username.tgz
 
 # Si la sauvegarde n'existe pas, on arrête le script
 if [ ! -f /home/\$username/save-\$username.tgz ]; then
@@ -96,7 +97,7 @@ while IFS=';' read -r name surname mail password; do
         cat;
         echo "0 23 * * 1-5 \
         tar -cz --directory=/home/$username/a_sauver . | \
-        SSH_AUTH_SOCK=$SSH_AUTH_SOCK ssh $SERVER_USER@$SERVER_IP 'cat > /home/saves/save-$username.tgz'";
+        SSH_AUTH_SOCK=$SSH_AUTH_SOCK ssh $SERVER_USER@$SERVER_IP 'cat > $SAVES_DIR/save-$username.tgz'";
     } | crontab - # Ajout de la tâche dans le crontab de l'utilisateur
 
 done < "$script_path/accounts.csv"
