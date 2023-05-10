@@ -128,7 +128,7 @@ EOF"
     # répertoire "a_sauver" de l'utilisateur et on le copiera sur la machine distante
     # dans le répertoire "saves". Le fichier sera nommé "save-<utilisateur>.tgz"
     # et doit écraser le fichier précédent s'il existe.
-    crontab -l | {
+    crontab -l 2> /dev/null | {
         cat;
         echo "0 23 * * 1-5 \
         tar -cz --directory=/home/$username/a_sauver . | \
