@@ -69,6 +69,33 @@ EOF
 chown root:root /home/retablir_sauvegarde
 chmod 755 /home/retablir_sauvegarde
 
+# Fonction d'installation de Eclipse IDE for Java Developers
+eclipse_install() {
+    # Récupération de la dernière version d'Eclipse IDE for Java Developers depuis le site officiel pour Linux 64-bit
+    wget "https://www.eclipse.org/downloads/packages/" -O /tmp/eclipse.html -q
+    eclipse_url=$(grep -oP "/technology/epp/downloads/release/[^/]+/R/eclipse-java-[^/]+-R-linux-gtk-x86_64.tar.gz" /tmp/eclipse.html | head -n 1)
+    eclipse_url="https://www.eclipse.org/downloads/download.php?file=$eclipse_url&r=1"
+
+    # Téléchargement de l'archive
+    wget "$eclipse_url" -O /tmp/eclipse.tar.gz -q
+
+    # Extraction de l'archive dans /usr/local/share
+    tar -xzf /tmp/eclipse.tar.gz -C /usr/local/share
+
+    # Changement du propriétaire du répertoire
+    chown -R root:root /usr/local/share/eclipse
+
+    # Création d'un lien symbolique vers le binaire
+    ln -s /usr/local/share/eclipse/eclipse /usr/local/bin/eclipse
+
+    # Nettoyage des fichiers temporaires
+    rm /tmp/eclipse.html
+    rm /tmp/eclipse.tar.gz
+}
+
+# Installation de Eclipse IDE for Java Developers
+eclipse_install
+
 # Bloquer les connexions de type FTP et toutes les connexions dans le protocole UDP
 ufw deny ftp
 ufw deny proto udp from any to any

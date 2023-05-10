@@ -8,7 +8,7 @@
   serveur distant
 - [x] Création d'un script de restauration des dossiers "a_sauver" des
   utilisateurs
-- [ ] Installation de Eclipse pour les utilisateurs
+- [x] Installation de Eclipse pour les utilisateurs
 - [x] Régler le pare-feu
 - [ ] Installer Nextcloud sur le serveur distant
 - [ ] Ajouter un outil de monitoring sur le serveur distant de Nextcloud
