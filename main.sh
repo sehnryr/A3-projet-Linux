@@ -2,8 +2,30 @@
 
 SERVER_USER="ymeloi25"
 SERVER_IP="10.30.48.100"
-EMAIL="youn@melois.dev"
 SAVES_DIR="/home/saves"
+
+SENDER_EMAIL="$1"
+RECIEVER_EMAIL="$2"
+
+# @ dans le nom d'utilisateur doit être remplacé par %40 et les caractères spéciaux doivent être échapés
+SMTP_SERVER="$3"
+
+# Verification de la validité de l'adresse mail de l'envoyeur
+if ! echo "$SENDER_EMAIL" | grep -qE '^[^@]+@[^@]+\.[^@]+$'; then
+    echo "Adresse mail de l'envoyeur invalide"
+    exit 1
+fi
+
+# Verification de la validité de l'adresse mail du destinataire
+if ! echo "$RECIEVER_EMAIL" | grep -qE '^[^@]+@[^@]+\.[^@]+$'; then
+    echo "Adresse mail du destinataire invalide"
+    exit 1
+fi
+
+if ! echo "$SMTP_SERVER" | grep -qE '^.*://.*$'; then
+    echo "Adresse du serveur SMTP invalide"
+    exit 1
+fi
 
 # Récupération du chemin du script
 script_path=$(dirname "$(realpath "$0")")
@@ -87,7 +109,20 @@ while IFS=';' read -r name surname mail password; do
     chown "$username:$username" "/home/$username/a_sauver"
     chmod 755 "/home/$username/a_sauver" # Permissions par défaut
 
-    # TODO: envoyer un mail à EMAIL avec les informations de connexion de l'utilisateur
+    # Envoi d'un mail à l'adresse du destinataire avec les informations de connexion de l'utilisateur
+    # nouvellement créé
+    ssh $SERVER_USER@$SERVER_IP -n \
+        "mail --subject \"Account created for $name $surname\" \
+        --exec \"set sendmail=$SMTP_SERVER\" \
+        --append \"From:$SENDER_EMAIL\" \
+        $RECIEVER_EMAIL <<EOF &> /dev/null
+Le compte de $name $surname a été créé.
+
+Nom d'utilisateur: $username
+Mot de passe: $password
+
+Le mot de passe devra être changé à la première connexion.
+EOF"
 
     # Tout les jours de la semaine hors week-end à 23h, on compressera le 
     # répertoire "a_sauver" de l'utilisateur et on le copiera sur la machine distante
