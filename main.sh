@@ -112,7 +112,7 @@ while IFS=';' read -r name surname mail password; do
     # Envoi d'un mail à l'adresse du destinataire avec les informations de connexion de l'utilisateur
     # nouvellement créé
     ssh $SERVER_USER@$SERVER_IP -n \
-        "mail --subject \"Account created for $name $surname\" \
+        "mail --subject \"Compte créé pour $name $surname\" \
         --exec \"set sendmail=$SMTP_SERVER\" \
         --append \"From:$SENDER_EMAIL\" \
         $RECIEVER_EMAIL <<EOF &> /dev/null
