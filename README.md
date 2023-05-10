@@ -3,7 +3,7 @@
 ## Cahier des charges
 
 - [x] Création d'utilisateurs depuis un fichier CSV
-- [ ] Envoi d'un mail lors de la création d'un utilisateur
+- [x] Envoi d'un mail lors de la création d'un utilisateur
 - [x] Sauvegarde automatique des dossiers "a_sauver" des utilisateurs sur un
   serveur distant
 - [x] Création d'un script de restauration des dossiers "a_sauver" des
