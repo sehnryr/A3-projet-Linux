@@ -4,27 +4,34 @@ SERVER_USER="ymeloi25"
 SERVER_IP="10.30.48.100"
 SAVES_DIR="/home/saves"
 
-SENDER_EMAIL="$1"
-RECIEVER_EMAIL="$2"
+SMTP_SERVER="$1"
+SMTP_LOGIN=$(echo "$2" | sed 's/@/%40/g')
+SMTP_PASSWORD=$(echo "$3" | sed 's/\@/%40/g' | sed 's/\$/\\\$/g' | sed 's/\&/\\\&/g' | sed 's/\!/\\\!/g')
 
-# @ dans le nom d'utilisateur doit être remplacé par %40 et les caractères spéciaux doivent être échapés
-SMTP_SERVER="$3"
+SENDER_EMAIL="$4"
 
-# Verification de la validité de l'adresse mail de l'envoyeur
-if ! echo "$SENDER_EMAIL" | grep -qE '^[^@]+@[^@]+\.[^@]+$'; then
-    echo "Adresse mail de l'envoyeur invalide"
-    exit 1
-fi
-
-# Verification de la validité de l'adresse mail du destinataire
-if ! echo "$RECIEVER_EMAIL" | grep -qE '^[^@]+@[^@]+\.[^@]+$'; then
-    echo "Adresse mail du destinataire invalide"
-    exit 1
-fi
-
-if ! echo "$SMTP_SERVER" | grep -qE '^.*://.*$'; then
+# Verification de la validité du serveur SMTP
+if [ -z "$SMTP_SERVER" ]; then
     echo "Adresse du serveur SMTP invalide"
     exit 1
+fi
+
+# Verification de la validité du login SMTP
+if [ -z "$SMTP_LOGIN" ]; then
+    echo "Login SMTP invalide"
+    exit 1
+fi
+
+# Verification de la validité du mot de passe SMTP
+if [ -z "$SMTP_PASSWORD" ]; then
+    echo "Mot de passe SMTP invalide"
+    exit 1
+fi
+
+# Verification de la validité de l'adresse email de l'expéditeur
+# Si l'adresse email de l'expéditeur n'est pas spécifiée, on utilise le login SMTP
+if [ -z "$SENDER_EMAIL" ]; then
+    SENDER_EMAIL=$(echo "$SMTP_LOGIN" | sed 's/%40/@/g')
 fi
 
 # Récupération du chemin du script
@@ -140,9 +147,9 @@ while IFS=';' read -r name surname mail password; do
     # nouvellement créé
     ssh $SERVER_USER@$SERVER_IP -n \
         "mail --subject \"Compte créé pour $name $surname\" \
-        --exec \"set sendmail=$SMTP_SERVER\" \
+        --exec \"set sendmail=smtp://$SMTP_LOGIN:$SMTP_PASSWORD@$SMTP_SERVER\" \
         --append \"From:$SENDER_EMAIL\" \
-        $RECIEVER_EMAIL <<EOF &> /dev/null
+        $mail <<EOF &> /dev/null
 Le compte de $name $surname a été créé.
 
 Nom d'utilisateur: $username
