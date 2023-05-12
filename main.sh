@@ -107,13 +107,34 @@ eclipse_install
 ufw deny ftp
 ufw deny proto udp from any to any
 
+# Fonction d'installation de Nextcloud sur le serveur distant
+nextcloud_install() {
+    # Installation de snapd si nécessaire sur la machine distante
+    ssh "$SERVER_USER@$SERVER_IP" apt install snapd -y
+
+    # Installation de Nextcloud sur la machine distante
+    ssh "$SERVER_USER@$SERVER_IP" snap install nextcloud
+
+    # Configuration de l'administrateur Nextcloud
+    ssh "$SERVER_USER@$SERVER_IP" nextcloud.manual-install "nextcloud-admin" "N3x+_Cl0uD"
+}
+
+# Fonction d'ajout d'un utilisateur à Nextcloud sur le serveur distant
+nextcloud_add_user() {
+    USER_NAME="$1"
+    USER_SURNAME="$2"
+    USER_USERNAME="$3"
+    USER_PASSWORD="$4"
+
+    # Ajout de l'utilisateur à Nextcloud sur la machine distante
+    ssh "$SERVER_USER@$SERVER_IP" OC_PASS="$USER_PASSWORD" nextcloud.occ user:add \
+        --password-from-env \
+        --display-name "$USER_NAME $USER_SURNAME" \
+        $USER_USERNAME
+}
+
 # Installation de Nextcloud sur le serveur distant
-ssh "$SERVER_USER@$SERVER_IP" mkdir -p /var/www
-ssh "$SERVER_USER@$SERVER_IP" curl -s https://download.nextcloud.com/server/releases/latest.tar.bz2 | tar -xjf - -C /var/www
-ssh "$SERVER_USER@$SERVER_IP" chown -R www-data:www-data /var/www/nextcloud
-ssh "$SERVER_USER@$SERVER_IP" sudo -u www-data php /var/www/nextcloud/occ maintenance:install \
-    --admin-user "nextcloud-admin" \
-    --admin-pass "N3x+_Cl0uD"
+nextcloud_install
 
 # Lecture du fichier accounts.csv ligne par ligne et création des utilisateurs
 while IFS=';' read -r name surname mail password; do
@@ -168,5 +189,8 @@ EOF"
         tar -cz --directory=/home/$username/a_sauver . | \
         SSH_AUTH_SOCK=$SSH_AUTH_SOCK ssh $SERVER_USER@$SERVER_IP 'cat > $SAVES_DIR/save-$username.tgz'";
     } | crontab - # Ajout de la tâche dans le crontab de l'utilisateur
+
+    # Ajout de l'utilisateur à Nextcloud sur la machine distante
+    nextcloud_add_user "$name" "$surname" "$username" "$password"
 
 done < "$script_path/accounts.csv"
