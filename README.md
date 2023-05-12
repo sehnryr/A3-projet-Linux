@@ -10,7 +10,7 @@
   utilisateurs
 - [x] Installation de Eclipse pour les utilisateurs
 - [x] Régler le pare-feu
-- [ ] Installer Nextcloud sur le serveur distant
+- [x] Installer Nextcloud sur le serveur distant
 - [ ] Ajouter un outil de monitoring sur le serveur distant de Nextcloud
 
 ## Docker
