@@ -6,7 +6,7 @@ SAVES_DIR="/home/saves"
 
 SMTP_SERVER="$1"
 SMTP_LOGIN=$(echo "$2" | sed 's/@/%40/g')
-SMTP_PASSWORD=$(echo "$3" | sed 's/\@/%40/g' | sed 's/\$/\\\$/g' | sed 's/\&/\\\&/g' | sed 's/\!/\\\!/g' | sed 's/\ /\\\ /g)
+SMTP_PASSWORD=$(echo "$3" | sed 's/\@/%40/g' | sed 's/\$/\\\$/g' | sed 's/\&/\\\&/g' | sed 's/\!/\\\!/g' | sed 's/\ /\\\ /g')
 
 SENDER_EMAIL="$4"
 
