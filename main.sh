@@ -130,6 +130,14 @@ ssh "$SERVER_USER@$SERVER_IP" mkdir "$SAVES_DIR"
 ssh "$SERVER_USER@$SERVER_IP" chown "$SERVER_USER:$SERVER_USER" "$SAVES_DIR"
 ssh "$SERVER_USER@$SERVER_IP" chmod 777 "$SAVES_DIR"
 
+# Création d'une clé SSH pour l'utilisateur root
+ssh-keygen -t ed25519 -f /root/.ssh/id_server -q -N ""
+chmod 644 /root/.ssh/id_server # Permet aux autres utilisateurs d'utiliser la clé
+chmod 644 /root/.ssh/id_server.pub
+
+# Copie de la clé publique sur le serveur distant
+ssh-copy-id -i /root/.ssh/id_server.pub $SERVER_USER@$SERVER_IP > /dev/null 2> /dev/null
+
 # Création du script de restauration de sauvegarde
 cat << EOF > /home/retablir_sauvegarde
 #!/bin/sh
