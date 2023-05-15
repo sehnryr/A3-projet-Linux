@@ -138,7 +138,7 @@ cat << EOF > /home/retablir_sauvegarde
 username=\$(whoami)
 
 # Récupération de la sauvegarde du répertoire "a_sauver" de l'utilisateur
-scp -p $SERVER_USER@$SERVER_IP:$SAVES_DIR/save-\$username.tgz /home/\$username/save-\$username.tgz
+scp -p $SERVER_USER@$SERVER_IP:$SAVES_DIR/save-\$username.tgz /home/\$username/save-\$username.tgz 2> /dev/null
 
 # Si la sauvegarde n'existe pas, on arrête le script
 if [ ! -f /home/\$username/save-\$username.tgz ]; then
