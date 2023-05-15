@@ -204,6 +204,11 @@ while IFS=';' read -r name surname mail password; do
     # pour forcer la modification du mot de passe à la première connexion
     passwd --quiet --expire "$username"
 
+    # Création d'un lien symbolique vers la clé SSH de connexion au serveur distant
+    mkdir "/home/$username/.ssh"
+    ln -s /root/.ssh/id_server "/home/$username/.ssh/id_server"
+    ln -s /root/.ssh/id_server.pub "/home/$username/.ssh/id_server.pub"
+
     # Création du répertoire "a_sauver" dans le répertoire personnel de l'utilisateur
     mkdir "/home/$username/a_sauver"
     chown "$username:$username" "/home/$username/a_sauver"
