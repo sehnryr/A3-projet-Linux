@@ -190,7 +190,12 @@ while IFS=';' read -r name surname mail password; do
     echo "Creating user $username"
 
     # Création de l'utilisateur
-    useradd --create-home --home-dir "/home/$username" --shell /bin/bash "$username"
+    adduser --home "/home/$username" \
+            --shell /bin/bash \
+            --disabled-password \
+            --gecos "$name $surname" \
+            --quiet \
+            "$username"
 
     # Modification du mot de passe de l'utilisateur
     echo "$username:$password" | chpasswd
