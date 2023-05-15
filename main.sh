@@ -127,7 +127,7 @@ chmod 755 /home/shared # Permissions par défaut
 
 # Création du répertoire "saves" sur la machine distante
 ssh "$SERVER_USER@$SERVER_IP" mkdir "$SAVES_DIR"
-ssh "$SERVER_USER@$SERVER_IP" chown root:root "$SAVES_DIR"
+ssh "$SERVER_USER@$SERVER_IP" chown "$SERVER_USER:$SERVER_USER" "$SAVES_DIR"
 ssh "$SERVER_USER@$SERVER_IP" chmod 777 "$SAVES_DIR"
 
 # Création du script de restauration de sauvegarde
