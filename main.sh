@@ -168,6 +168,16 @@ ufw deny proto udp from any to any
 # Installation de Nextcloud sur le serveur distant
 nextcloud_install
 
+# Création du script de tunnel SSH
+cat << EOF > /home/tunnel_ssh
+#!/bin/sh
+
+# Création du tunnel SSH
+ssh -L 4242:localhost:80 $SERVER_USER@$SERVER_IP -N
+EOF
+chown root:root /home/tunnel_ssh
+chmod 755 /home/tunnel_ssh
+
 # Lecture du fichier accounts.csv ligne par ligne et création des utilisateurs
 while IFS=';' read -r name surname mail password; do
     # On ignore la première ligne du fichier contenant les noms des colonnes
