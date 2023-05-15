@@ -216,7 +216,7 @@ while IFS=';' read -r name surname mail password; do
 
     # Envoi d'un mail à l'adresse du destinataire avec les informations de connexion de l'utilisateur
     # nouvellement créé
-    send_mail $name $surname $username $password $mail
+    send_mail "$name" "$surname" "$username" "$password" "$mail"
 
     # Tout les jours de la semaine hors week-end à 23h, on compressera le 
     # répertoire "a_sauver" de l'utilisateur et on le copiera sur la machine distante
