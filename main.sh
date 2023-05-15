@@ -130,14 +130,6 @@ ssh "$SERVER_USER@$SERVER_IP" mkdir "$SAVES_DIR"
 ssh "$SERVER_USER@$SERVER_IP" chown "$SERVER_USER:$SERVER_USER" "$SAVES_DIR"
 ssh "$SERVER_USER@$SERVER_IP" chmod 777 "$SAVES_DIR"
 
-# Création d'une clé SSH pour l'utilisateur root
-ssh-keygen -t ed25519 -f /root/.ssh/id_server -q -N ""
-chmod 644 /root/.ssh/id_server # Permet aux autres utilisateurs d'utiliser la clé
-chmod 644 /root/.ssh/id_server.pub
-
-# Copie de la clé publique sur le serveur distant
-ssh-copy-id -i /root/.ssh/id_server.pub $SERVER_USER@$SERVER_IP > /dev/null 2> /dev/null
-
 # Création du script de restauration de sauvegarde
 cat << EOF > /home/retablir_sauvegarde
 #!/bin/sh
@@ -204,10 +196,14 @@ while IFS=';' read -r name surname mail password; do
     # pour forcer la modification du mot de passe à la première connexion
     passwd --quiet --expire "$username"
 
-    # Création d'un lien symbolique vers la clé SSH de connexion au serveur distant
+    # Création d'une clé SSH pour l'utilisateur
     mkdir "/home/$username/.ssh"
-    ln -s /root/.ssh/id_server "/home/$username/.ssh/id_server"
-    ln -s /root/.ssh/id_server.pub "/home/$username/.ssh/id_server.pub"
+    chmod 700 "/home/$username/.ssh"
+    ssh-keygen -t ed25519 -f "/home/$username/.ssh/id_ed25519" -q -N "" -C "$username@$(hostname)"
+    chown -R "$username:$username" "/home/$username/.ssh"
+
+    # Ajout de la clé publique de l'utilisateur dans le fichier authorized_keys distant
+    ssh-copy-id -i "/home/$username/.ssh/id_ed25519.pub" $SERVER_USER@$SERVER_IP > /dev/null 2> /dev/null
 
     # Création du répertoire "a_sauver" dans le répertoire personnel de l'utilisateur
     mkdir "/home/$username/a_sauver"
