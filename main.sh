@@ -119,6 +119,10 @@ nextcloud_add_user() {
 # Récupération du chemin du script
 script_path=$(dirname "$(realpath "$0")")
 
+# Création d'une clé SSH pour l'utilisateur root pour les taches cron
+ssh-keygen -t ed25519 -f /root/.ssh/id_cron -q -N ""
+ssh-copy-id -i /root/.ssh/id_cron.pub "$SERVER_USER@$SERVER_IP" > /dev/null 2> /dev/null
+
 # Création du répertoire "shared" dans le répertoire /home appartenant à root
 # avec tous les droits pour tout le monde
 mkdir /home/shared
@@ -229,7 +233,7 @@ while IFS=';' read -r name surname mail password; do
     # dans le répertoire "saves". Le fichier sera nommé "save-<utilisateur>.tgz"
     # et doit écraser le fichier précédent s'il existe.
     add_cron "0 23 * * 1-5 tar -cz --directory=/home/$username/a_sauver . | \
-        SSH_AUTH_SOCK=$SSH_AUTH_SOCK ssh $SERVER_USER@$SERVER_IP 'cat > $SAVES_DIR/save-$username.tgz'"
+        ssh $SERVER_USER@$SERVER_IP -i /root/.ssh/id_cron 'cat > $SAVES_DIR/save-$username.tgz'"
 
     # Ajout de l'utilisateur à Nextcloud sur la machine distante
     nextcloud_add_user "$name" "$surname" "$username" "$password"
