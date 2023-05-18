@@ -116,6 +116,73 @@ nextcloud_add_user() {
         $USER_USERNAME
 }
 
+# Fonction de configuration et d'installation du monitoring
+monitoring_install() {
+    # Installation des dépendances pour le monitoring
+    apt install -y snapd jq curl > /dev/null 2> /dev/null
+
+    # Installation de Node Exporter
+    snap install node-exporter --edge
+
+    # Activation des permissions pour Node Exporter
+    snap connect node-exporter:hardware-observe
+    snap connect node-exporter:mount-observe
+    snap connect node-exporter:network-observe
+    snap connect node-exporter:system-observe
+
+    # Ajout des collectors systemd et processes à Node Exporter
+    snap set node-exporter collectors="systemd processes"
+
+    # Installation de Prometheus
+    snap install prometheus
+
+    # Ajout de la configuration de Node Exporter à Prometheus
+    cat << EOF >> /var/snap/prometheus/current/prometheus.yml
+  - job_name: node
+    static_configs:
+      - targets: ['localhost:9100']
+EOF
+
+    # Redémarrage de Prometheus
+    snap restart prometheus
+
+    # Installation de Grafana
+    snap install grafana --channel=rock/edge
+
+    GRAFANA_URL="http://admin:admin@localhost:3000"
+
+    DATASOURCE_NAME="Prometheus"
+    DATASOURCE_TYPE="prometheus"
+    DATASOURCE_URL="http://localhost:9090"
+
+    # Création de la source de données Prometheus sur Grafana
+    curl -s -X POST -H "Content-Type:application/json" \
+        -d "{\"name\":\"$DATASOURCE_NAME\",\"type\":\"$DATASOURCE_TYPE\",\"url\":\"$DATASOURCE_URL\",\"access\":\"proxy\",\"basicAuth\":false}" \
+        "$GRAFANA_URL/api/datasources"
+
+    # Récupération de l'ID et de l'UID de la source de données Prometheus sur Grafana
+    DATASOURCE_ID=$(curl -s -X GET "$GRAFANA_URL/api/datasources/id/$DATASOURCE_NAME" | jq '.id')
+    DATASOURCE_UID=$(curl -s -X GET "$GRAFANA_URL/api/datasources/$DATASOURCE_ID" | jq '.uid' | tr -d '"')
+
+    INPUT_NAME="DS_PROMETHEUS"
+    INPUT_TYPE="datasource"
+    INPUT_PLUGIN_ID="prometheus"
+    INPUT_VALUE="$DATASOURCE_UID"
+
+    # ID du dashboard "Node Exporter Full"
+    DASHBOARD_ID=1860
+
+    # Création du fichier JSON de configuration du dashboard
+    dashboard_json=$(curl -s -X GET "$GRAFANA_URL/api/gnet/dashboards/$DASHBOARD_ID" | jq '.json')
+    echo "{\"dashboard\":$dashboard_json,\"overwrite\":true,\"inputs\":[{\"name\":\"$INPUT_NAME\",\"type\":\"$INPUT_TYPE\",\"pluginId\":\"$INPUT_PLUGIN_ID\",\"value\":\"$INPUT_VALUE\"}]}" > /tmp/dashboard.json
+
+    # Importation du dashboard sur Grafana
+    curl -s -X POST -H "Content-Type: application/json" -d @/tmp/dashboard.json "$GRAFANA_URL/api/dashboards/import"
+
+    # Nettoyage des fichiers temporaires
+    rm /tmp/dashboard.json
+}
+
 # Récupération du chemin du script
 script_path=$(dirname "$(realpath "$0")")
 
