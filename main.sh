@@ -122,19 +122,22 @@ monitoring_install() {
     apt install -y snapd jq curl > /dev/null 2> /dev/null
 
     # Installation de Node Exporter
-    snap install node-exporter --edge
+    snap install node-exporter --edge > /dev/null 2> /dev/null
 
     # Activation des permissions pour Node Exporter
-    snap connect node-exporter:hardware-observe
-    snap connect node-exporter:mount-observe
-    snap connect node-exporter:network-observe
-    snap connect node-exporter:system-observe
+    snap connect node-exporter:hardware-observe > /dev/null 2> /dev/null
+    snap connect node-exporter:mount-observe > /dev/null 2> /dev/null
+    snap connect node-exporter:network-observe > /dev/null 2> /dev/null
+    snap connect node-exporter:system-observe > /dev/null 2> /dev/null
 
     # Ajout des collectors systemd et processes à Node Exporter
-    snap set node-exporter collectors="systemd processes"
+    snap set node-exporter collectors="systemd processes" > /dev/null 2> /dev/null
 
     # Installation de Prometheus
-    snap install prometheus
+    snap install prometheus > /dev/null 2> /dev/null
+
+    # Attente de la disponibilité de l'API de Prometheus
+    while [ "$(curl -s -o /dev/null -w "%{http_code}" http://localhost:9090)" = "000" ]; do :; done
 
     # Ajout de la configuration de Node Exporter à Prometheus
     cat << EOF >> /var/snap/prometheus/current/prometheus.yml
@@ -144,10 +147,13 @@ monitoring_install() {
 EOF
 
     # Redémarrage de Prometheus
-    snap restart prometheus
+    snap restart prometheus > /dev/null 2> /dev/null
 
     # Installation de Grafana
-    snap install grafana --channel=rock/edge
+    snap install grafana --channel=rock/edge > /dev/null 2> /dev/null
+
+    # Attente de la disponibilité de l'API de Grafana
+    while [ "$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000)" = "000" ]; do :; done  
 
     GRAFANA_URL="http://admin:admin@localhost:3000"
 
@@ -158,7 +164,7 @@ EOF
     # Création de la source de données Prometheus sur Grafana
     curl -s -X POST -H "Content-Type:application/json" \
         -d "{\"name\":\"$DATASOURCE_NAME\",\"type\":\"$DATASOURCE_TYPE\",\"url\":\"$DATASOURCE_URL\",\"access\":\"proxy\",\"basicAuth\":false}" \
-        "$GRAFANA_URL/api/datasources"
+        "$GRAFANA_URL/api/datasources" > /dev/null 2> /dev/null
 
     # Récupération de l'ID et de l'UID de la source de données Prometheus sur Grafana
     DATASOURCE_ID=$(curl -s -X GET "$GRAFANA_URL/api/datasources/id/$DATASOURCE_NAME" | jq '.id')
@@ -177,7 +183,7 @@ EOF
     echo "{\"dashboard\":$dashboard_json,\"overwrite\":true,\"inputs\":[{\"name\":\"$INPUT_NAME\",\"type\":\"$INPUT_TYPE\",\"pluginId\":\"$INPUT_PLUGIN_ID\",\"value\":\"$INPUT_VALUE\"}]}" > /tmp/dashboard.json
 
     # Importation du dashboard sur Grafana
-    curl -s -X POST -H "Content-Type: application/json" -d @/tmp/dashboard.json "$GRAFANA_URL/api/dashboards/import"
+    curl -s -X POST -H "Content-Type: application/json" -d @/tmp/dashboard.json "$GRAFANA_URL/api/dashboards/import" > /dev/null 2> /dev/null
 
     # Nettoyage des fichiers temporaires
     rm /tmp/dashboard.json
