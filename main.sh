@@ -255,6 +255,9 @@ EOF
 chown root:root /home/tunnel_ssh
 chmod 755 /home/tunnel_ssh
 
+# Installation du monitoring Prometheus et Grafana sur le serveur distant
+ssh "$SERVER_USER@$SERVER_IP" "$(declare -f monitoring_install); monitoring_install"
+
 # Lecture du fichier accounts.csv ligne par ligne et création des utilisateurs
 while IFS=';' read -r name surname mail password; do
     # On ignore la première ligne du fichier contenant les noms des colonnes
