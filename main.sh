@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 SERVER_USER="ymeloi25"
 SERVER_IP="10.30.48.100"
