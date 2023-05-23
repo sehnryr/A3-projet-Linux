@@ -82,13 +82,16 @@ start_cron() {
 
 # Fonction d'installation de Eclipse IDE for Java Developers
 eclipse_install() {
+    # Installation de curl si nécessaire
+    apt install -y curl
+
     # Récupération de la dernière version d'Eclipse IDE for Java Developers depuis le site officiel pour Linux 64-bit
-    wget "https://www.eclipse.org/downloads/packages/" -O /tmp/eclipse.html -q
+    curl https://www.eclipse.org/downloads/packages/ -o /tmp/eclipse.html
     eclipse_url=$(grep -oP "/technology/epp/downloads/release/[^/]+/R/eclipse-java-[^/]+-R-linux-gtk-x86_64.tar.gz" /tmp/eclipse.html | head -n 1)
     eclipse_url="https://www.eclipse.org/downloads/download.php?file=$eclipse_url&r=1"
 
     # Téléchargement de l'archive
-    wget "$eclipse_url" -O /tmp/eclipse.tar.gz -q
+    curl -L "$eclipse_url" -o /tmp/eclipse.tar.gz
 
     # Extraction de l'archive dans /usr/local/share
     tar -xzf /tmp/eclipse.tar.gz -C /usr/local/share
