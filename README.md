@@ -35,20 +35,6 @@ docker container run \
     a3-projet-linux-image
 ```
 
-Il est nécessaire de démarrer le service `cron` dans le conteneur pour que
-les tâches planifiées soient exécutées. Pour cela, il faut exécuter la
-commande suivante dans le conteneur :
-```sh
-service cron start
-```
-
-Il est également requis de démarrer le service `ufw` dans le conteneur pour
-que le pare-feu soit activé. Pour cela, il faut exécuter la commande suivante
-dans le conteneur :
-```sh
-ufw enable
-```
-
 Ici, le conteneur est lancé en mode interactif, ce qui permet de pouvoir
 interagir avec le conteneur. Il est aussi lancé en mode rm qui permet de
 supprimer le conteneur une fois qu'il est arrêté.
