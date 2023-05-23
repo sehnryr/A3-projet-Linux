@@ -69,6 +69,17 @@ add_cron() {
     } | crontab -
 }
 
+# Fonction de démarrage du service cron
+start_cron() {
+    # Condition pour vérifier si le système utilise systemd ou init
+    if [ -n "$(pidof systemd)" ]; then
+        systemctl enable cron >/dev/null 2>/dev/null
+        systemctl start cron >/dev/null 2>/dev/null
+    else
+        service cron start >/dev/null 2>/dev/null
+    fi
+}
+
 # Fonction d'installation de Eclipse IDE for Java Developers
 eclipse_install() {
     # Récupération de la dernière version d'Eclipse IDE for Java Developers depuis le site officiel pour Linux 64-bit
@@ -206,6 +217,9 @@ EOF
     # Nettoyage des fichiers temporaires
     rm /tmp/dashboard.json
 }
+
+# Activation du service cron
+start_cron
 
 # Récupération du chemin du script
 script_path=$(dirname "$(realpath "$0")")
