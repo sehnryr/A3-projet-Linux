@@ -12,7 +12,7 @@
 - [x] Régler le pare-feu
 - [x] Installer Nextcloud sur le serveur distant
 - [x] Connection ssh pour les utilisateurs
-- [ ] Ajouter un outil de monitoring sur le serveur distant de Nextcloud
+- [x] Ajouter un outil de monitoring sur le serveur distant de Nextcloud
 
 ## Docker
 
