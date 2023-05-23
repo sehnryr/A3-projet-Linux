@@ -1,5 +1,14 @@
 # Projet Linux
 
+## Sommaire
+- [Projet Linux](#projet-linux)
+  - [Sommaire](#sommaire)
+  - [Cahier des charges](#cahier-des-charges)
+  - [Utilisation](#utilisation)
+  - [Nextcloud](#nextcloud)
+  - [Monitoring](#monitoring)
+  - [Docker](#docker)
+
 ## Cahier des charges
 
 - [x] Création d'utilisateurs depuis un fichier CSV
@@ -13,6 +22,41 @@
 - [x] Installer Nextcloud sur le serveur distant
 - [x] Connection ssh pour les utilisateurs
 - [x] Ajouter un outil de monitoring sur le serveur distant de Nextcloud
+
+## Utilisation
+
+Pour lancer le projet, il faut exécuter le script `main.sh` en tant que
+super-utilisateur :
+```
+$ su root
+# ./main.sh <url du serveur smtp> <login du serveur smtp> <mot de passe du serveur smtp>
+```
+
+## Nextcloud
+
+Pour acceder à Nextcloud, il faut tunneliser le port 80 du serveur distant
+vers le port 4242 sur la machine locale :
+```
+$ /home/tunnel_ssh
+```
+
+Ou alors, utiliser la commande ssh suivante :
+```
+$ ssh -L 4242:<ip>:80 <user>@<ip>
+```
+
+## Monitoring
+
+Pour accéder à l'outil de monitoring, il faut tunneliser le port 3000 du serveur
+distant vers le port 3000 sur la machine locale :
+```
+# /root/tunnel_grafana
+```
+
+Ou alors, utiliser la commande ssh suivante :
+```
+# ssh -L 3000:<ip>:3000 <user>@<ip>
+```
 
 ## Docker
 
