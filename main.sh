@@ -54,11 +54,10 @@ Mot de passe : $USER_PASSWORD
 Le mot de passe doit être changé lors de la première connexion."
 
     # Envoi du mail
-    ssh $SERVER_USER@$SERVER_IP -n "mail \
-        --subject \"Création de compte\" \
-        --exec \"set sendmail=smtp://$SMTP_LOGIN:$SMTP_PASSWORD@$SMTP_SERVER\" \
-        --append \"From:$SENDER_EMAIL\" \
-        $USER_EMAIL <<< \"$message\" &> /dev/null"
+    mail --subject "Création de compte" \
+        --exec "set sendmail=smtp://$SMTP_LOGIN:$SMTP_PASSWORD@$SMTP_SERVER" \
+        --append "From:$SENDER_EMAIL" \
+        "$USER_EMAIL" <<<"$message" &>/dev/null
 }
 
 # Fonction pour ajouter une tache cron
@@ -222,14 +221,14 @@ EOF
 }
 
 # Activation du service cron
-start_cron >/dev/null 2>&1
+start_cron
 
 # Récupération du chemin du script
 script_path=$(dirname "$(realpath "$0")")
 
 # Création d'une clé SSH pour l'utilisateur root pour les taches cron
 ssh-keygen -t ed25519 -f /root/.ssh/id_cron -q -N ""
-ssh-copy-id -i /root/.ssh/id_cron.pub "$SERVER_USER@$SERVER_IP" >/dev/null 2>/dev/null
+ssh-copy-id -i /root/.ssh/id_cron.pub "$SERVER_USER@$SERVER_IP"
 
 # Création du répertoire "shared" dans le répertoire /home appartenant à root
 # avec tous les droits pour tout le monde
@@ -271,13 +270,13 @@ chown root:root /home/retablir_sauvegarde
 chmod 755 /home/retablir_sauvegarde
 
 # Installation de Eclipse IDE for Java Developers
-eclipse_install >/dev/null 2>&1
+eclipse_install
 
 # Configuration du pare-feu
-firewall_setup >/dev/null 2>&1
+firewall_setup
 
 # Installation de Nextcloud sur le serveur distant
-ssh "$SERVER_USER@$SERVER_IP" "$(declare -f nextcloud_install)"; nextcloud_install >/dev/null 2>&1
+ssh "$SERVER_USER@$SERVER_IP" "$(declare -f nextcloud_install); nextcloud_install"
 
 # Création du script de tunnel SSH
 cat <<EOF >/home/tunnel_ssh
@@ -290,7 +289,7 @@ chown root:root /home/tunnel_ssh
 chmod 755 /home/tunnel_ssh
 
 # Installation du monitoring Prometheus et Grafana sur le serveur distant
-ssh "$SERVER_USER@$SERVER_IP" "$(declare -f monitoring_install)"; monitoring_install >/dev/null 2>&1
+ssh "$SERVER_USER@$SERVER_IP" "$(declare -f monitoring_install); monitoring_install"
 
 # Création du script de tunnel SSH pour l'accès à Grafana
 cat <<EOF >/root/tunnel_grafana
@@ -337,7 +336,7 @@ while IFS=';' read -r name surname mail password; do
     chown -R "$username:$username" "/home/$username/.ssh"
 
     # Ajout de la clé publique de l'utilisateur dans le fichier authorized_keys distant
-    ssh-copy-id -i "/home/$username/.ssh/id_ed25519.pub" $SERVER_USER@$SERVER_IP >/dev/null 2>/dev/null
+    ssh-copy-id -i "/home/$username/.ssh/id_ed25519.pub" $SERVER_USER@$SERVER_IP
 
     # Création du répertoire "a_sauver" dans le répertoire personnel de l'utilisateur
     mkdir "/home/$username/a_sauver"
@@ -346,7 +345,7 @@ while IFS=';' read -r name surname mail password; do
 
     # Envoi d'un mail à l'adresse du destinataire avec les informations de connexion de l'utilisateur
     # nouvellement créé
-    send_mail "$name" "$surname" "$username" "$password" "$mail" >/dev/null 2>&1
+    ssh -n "$SERVER_USER@$SERVER_IP" "$(declare -f nextcloud_add_user); send_mail \"$name\" \"$surname\" \"$username\" \"$password\" \"$mail\""
 
     # Tout les jours de la semaine hors week-end à 23h, on compressera le
     # répertoire "a_sauver" de l'utilisateur et on le copiera sur la machine distante
@@ -356,6 +355,6 @@ while IFS=';' read -r name surname mail password; do
         ssh $SERVER_USER@$SERVER_IP -i /root/.ssh/id_cron 'cat > $SAVES_DIR/save-$username.tgz'"
 
     # Ajout de l'utilisateur à Nextcloud sur le serveur distant
-    ssh -n "$SERVER_USER@$SERVER_IP" "$(declare -f nextcloud_add_user)"; nextcloud_add_user "$name" "$surname" "$username" "$password" >/dev/null 2>&1
+    ssh -n "$SERVER_USER@$SERVER_IP" "$(declare -f nextcloud_add_user); nextcloud_add_user \"$name\" \"$surname\" \"$username\" \"$password\""
 
 done <"$script_path/accounts.csv"
