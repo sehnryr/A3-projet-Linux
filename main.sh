@@ -315,6 +315,6 @@ while IFS=';' read -r name surname mail password; do
         ssh $SERVER_USER@$SERVER_IP -i /root/.ssh/id_cron 'cat > $SAVES_DIR/save-$username.tgz'"
 
     # Ajout de l'utilisateur à Nextcloud sur le serveur distant
-    ssh "$SERVER_USER@$SERVER_IP" "$(declare -f nextcloud_add_user); nextcloud_add_user \"$name\" \"$surname\" \"$username\" \"$password\""
+    ssh -n "$SERVER_USER@$SERVER_IP" "$(declare -f nextcloud_add_user); nextcloud_add_user \"$name\" \"$surname\" \"$username\" \"$password\""
 
 done <"$script_path/accounts.csv"
