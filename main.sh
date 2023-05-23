@@ -41,6 +41,11 @@ send_mail() {
     USER_USERNAME="$3"
     USER_PASSWORD="$4"
     USER_EMAIL="$5"
+    SENDER_EMAIL="$6"
+    SMTP_LOGIN="$7"
+    SMTP_PASSWORD="$8"
+    SMTP_SERVER="$9"
+    SERVER_IP="${10}"
 
     # Création du message
     message="Bonjour $USER_NAME $USER_SURNAME,
@@ -343,9 +348,9 @@ while IFS=';' read -r name surname mail password; do
     chown "$username:$username" "/home/$username/a_sauver"
     chmod 755 "/home/$username/a_sauver" # Permissions par défaut
 
-    # Envoi d'un mail à l'adresse du destinataire avec les informations de connexion de l'utilisateur
-    # nouvellement créé
-    ssh -n "$SERVER_USER@$SERVER_IP" "$(declare -f nextcloud_add_user); send_mail \"$name\" \"$surname\" \"$username\" \"$password\" \"$mail\""
+    # Envoi d'un mail à l'adresse du destinataire avec les informations de connexion de l'utilisateur nouvellement créé
+    ssh -n "$SERVER_USER@$SERVER_IP" "$(declare -f send_mail); send_mail \
+        \"$name\" \"$surname\" \"$username\" \"$password\" \"$mail\" \"$SENDER_EMAIL\" \"$SMTP_LOGIN\" \"$SMTP_PASSWORD\" \"$SMTP_SERVER\" \"$SERVER_IP\""
 
     # Tout les jours de la semaine hors week-end à 23h, on compressera le
     # répertoire "a_sauver" de l'utilisateur et on le copiera sur la machine distante
