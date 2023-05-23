@@ -116,7 +116,7 @@ nextcloud_add_user() {
     OC_PASS="$USER_PASSWORD" /snap/bin/nextcloud.occ user:add \
         --password-from-env \
         --display-name "$USER_NAME $USER_SURNAME" \
-        $USER_USERNAME
+        "$USER_USERNAME"
 }
 
 # Fonction de configuration et d'installation du monitoring
