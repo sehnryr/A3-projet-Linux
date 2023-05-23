@@ -93,6 +93,21 @@ eclipse_install() {
     rm /tmp/eclipse.tar.gz
 }
 
+# Fonction de configuration du pare-feu
+firewall_setup() {
+    # Installation de ufw si nécessaire
+    apt install ufw -y >/dev/null 2>/dev/null
+
+    # Activation du pare-feu
+    ufw enable >/dev/null 2>/dev/null
+
+    # Blocage des connexions de type FTP
+    ufw deny ftp >/dev/null 2>/dev/null
+
+    # Blocage des connexions dans le protocole UDP
+    ufw deny proto udp from any to any >/dev/null 2>/dev/null
+}
+
 # Fonction d'installation de Nextcloud
 nextcloud_install() {
     # Installation de snapd si nécessaire sur la machine distante
@@ -241,9 +256,8 @@ chmod 755 /home/retablir_sauvegarde
 # Installation de Eclipse IDE for Java Developers
 eclipse_install
 
-# Bloquer les connexions de type FTP et toutes les connexions dans le protocole UDP
-ufw deny ftp
-ufw deny proto udp from any to any
+# Configuration du pare-feu
+firewall_setup
 
 # Installation de Nextcloud sur le serveur distant
 ssh "$SERVER_USER@$SERVER_IP" "$(declare -f nextcloud_install); nextcloud_install"
