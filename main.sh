@@ -90,19 +90,19 @@ eclipse_install() {
     rm /tmp/eclipse.tar.gz
 }
 
-# Fonction d'installation de Nextcloud sur le serveur distant
+# Fonction d'installation de Nextcloud
 nextcloud_install() {
     # Installation de snapd si nécessaire sur la machine distante
-    ssh "$SERVER_USER@$SERVER_IP" apt install snapd -y
+    apt install snapd -y > /dev/null 2> /dev/null
 
     # Installation de Nextcloud sur la machine distante
-    ssh "$SERVER_USER@$SERVER_IP" snap install nextcloud
+    snap install nextcloud > /dev/null 2> /dev/null
 
     # Configuration de l'administrateur Nextcloud
-    ssh "$SERVER_USER@$SERVER_IP" nextcloud.manual-install "nextcloud-admin" "N3x+_Cl0uD"
+    /snap/bin/nextcloud.manual-install "nextcloud-admin" "N3x+_Cl0uD"
 }
 
-# Fonction d'ajout d'un utilisateur à Nextcloud sur le serveur distant
+# Fonction d'ajout d'un utilisateur à Nextcloud
 nextcloud_add_user() {
     USER_NAME="$1"
     USER_SURNAME="$2"
@@ -110,7 +110,7 @@ nextcloud_add_user() {
     USER_PASSWORD="$4"
 
     # Ajout de l'utilisateur à Nextcloud sur la machine distante
-    ssh "$SERVER_USER@$SERVER_IP" OC_PASS="$USER_PASSWORD" nextcloud.occ user:add \
+    OC_PASS="$USER_PASSWORD" /snap/bin/nextcloud.occ user:add \
         --password-from-env \
         --display-name "$USER_NAME $USER_SURNAME" \
         $USER_USERNAME
@@ -243,14 +243,14 @@ ufw deny ftp
 ufw deny proto udp from any to any
 
 # Installation de Nextcloud sur le serveur distant
-nextcloud_install
+ssh "$SERVER_USER@$SERVER_IP" "$(declare -f nextcloud_install); nextcloud_install"
 
 # Création du script de tunnel SSH
 cat << EOF > /home/tunnel_ssh
 #!/bin/sh
 
 # Création du tunnel SSH
-ssh -L 4242:localhost:80 $SERVER_USER@$SERVER_IP -N
+ssh -L 4242:$SERVER_IP:80 -NT $SERVER_USER@$SERVER_IP
 EOF
 chown root:root /home/tunnel_ssh
 chmod 755 /home/tunnel_ssh
@@ -311,7 +311,7 @@ while IFS=';' read -r name surname mail password; do
     add_cron "0 23 * * 1-5 tar -cz --directory=/home/$username/a_sauver . | \
         ssh $SERVER_USER@$SERVER_IP -i /root/.ssh/id_cron 'cat > $SAVES_DIR/save-$username.tgz'"
 
-    # Ajout de l'utilisateur à Nextcloud sur la machine distante
-    nextcloud_add_user "$name" "$surname" "$username" "$password"
+    # Ajout de l'utilisateur à Nextcloud sur le serveur distant
+    ssh "$SERVER_USER@$SERVER_IP" "$(declare -f nextcloud_add_user); nextcloud_add_user \"$name\" \"$surname\" \"$username\" \"$password\""
 
 done < "$script_path/accounts.csv"
