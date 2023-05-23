@@ -63,7 +63,10 @@ Le mot de passe doit être changé lors de la première connexion."
 
 # Fonction pour ajouter une tache cron
 add_cron() {
-    crontab -l 2> /dev/null | { cat; echo "$1"; } | crontab -
+    crontab -l 2>/dev/null | {
+        cat
+        echo "$1"
+    } | crontab -
 }
 
 # Fonction d'installation de Eclipse IDE for Java Developers
@@ -93,10 +96,10 @@ eclipse_install() {
 # Fonction d'installation de Nextcloud
 nextcloud_install() {
     # Installation de snapd si nécessaire sur la machine distante
-    apt install snapd -y > /dev/null 2> /dev/null
+    apt install snapd -y >/dev/null 2>/dev/null
 
     # Installation de Nextcloud sur la machine distante
-    snap install nextcloud > /dev/null 2> /dev/null
+    snap install nextcloud >/dev/null 2>/dev/null
 
     # Configuration de l'administrateur Nextcloud
     /snap/bin/nextcloud.manual-install "nextcloud-admin" "N3x+_Cl0uD"
@@ -119,41 +122,41 @@ nextcloud_add_user() {
 # Fonction de configuration et d'installation du monitoring
 monitoring_install() {
     # Installation des dépendances pour le monitoring
-    apt install -y snapd jq curl > /dev/null 2> /dev/null
+    apt install -y snapd jq curl >/dev/null 2>/dev/null
 
     # Installation de Node Exporter
-    snap install node-exporter --edge > /dev/null 2> /dev/null
+    snap install node-exporter --edge >/dev/null 2>/dev/null
 
     # Activation des permissions pour Node Exporter
-    snap connect node-exporter:hardware-observe > /dev/null 2> /dev/null
-    snap connect node-exporter:mount-observe > /dev/null 2> /dev/null
-    snap connect node-exporter:network-observe > /dev/null 2> /dev/null
-    snap connect node-exporter:system-observe > /dev/null 2> /dev/null
+    snap connect node-exporter:hardware-observe >/dev/null 2>/dev/null
+    snap connect node-exporter:mount-observe >/dev/null 2>/dev/null
+    snap connect node-exporter:network-observe >/dev/null 2>/dev/null
+    snap connect node-exporter:system-observe >/dev/null 2>/dev/null
 
     # Ajout des collectors systemd et processes à Node Exporter
-    snap set node-exporter collectors="systemd processes" > /dev/null 2> /dev/null
+    snap set node-exporter collectors="systemd processes" >/dev/null 2>/dev/null
 
     # Installation de Prometheus
-    snap install prometheus > /dev/null 2> /dev/null
+    snap install prometheus >/dev/null 2>/dev/null
 
     # Attente de la disponibilité de l'API de Prometheus
     while [ "$(curl -s -o /dev/null -w "%{http_code}" http://localhost:9090)" = "000" ]; do :; done
 
     # Ajout de la configuration de Node Exporter à Prometheus
-    cat << EOF >> /var/snap/prometheus/current/prometheus.yml
+    cat <<EOF >>/var/snap/prometheus/current/prometheus.yml
   - job_name: node
     static_configs:
       - targets: ['localhost:9100']
 EOF
 
     # Redémarrage de Prometheus
-    snap restart prometheus > /dev/null 2> /dev/null
+    snap restart prometheus >/dev/null 2>/dev/null
 
     # Installation de Grafana
-    snap install grafana --channel=rock/edge > /dev/null 2> /dev/null
+    snap install grafana --channel=rock/edge >/dev/null 2>/dev/null
 
     # Attente de la disponibilité de l'API de Grafana
-    while [ "$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000)" = "000" ]; do :; done  
+    while [ "$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000)" = "000" ]; do :; done
 
     GRAFANA_URL="http://admin:admin@localhost:3000"
 
@@ -164,7 +167,7 @@ EOF
     # Création de la source de données Prometheus sur Grafana
     curl -s -X POST -H "Content-Type:application/json" \
         -d "{\"name\":\"$DATASOURCE_NAME\",\"type\":\"$DATASOURCE_TYPE\",\"url\":\"$DATASOURCE_URL\",\"access\":\"proxy\",\"basicAuth\":false}" \
-        "$GRAFANA_URL/api/datasources" > /dev/null 2> /dev/null
+        "$GRAFANA_URL/api/datasources" >/dev/null 2>/dev/null
 
     # Récupération de l'ID et de l'UID de la source de données Prometheus sur Grafana
     DATASOURCE_ID=$(curl -s -X GET "$GRAFANA_URL/api/datasources/id/$DATASOURCE_NAME" | jq '.id')
@@ -180,10 +183,10 @@ EOF
 
     # Création du fichier JSON de configuration du dashboard
     dashboard_json=$(curl -s -X GET "$GRAFANA_URL/api/gnet/dashboards/$DASHBOARD_ID" | jq '.json')
-    echo "{\"dashboard\":$dashboard_json,\"overwrite\":true,\"inputs\":[{\"name\":\"$INPUT_NAME\",\"type\":\"$INPUT_TYPE\",\"pluginId\":\"$INPUT_PLUGIN_ID\",\"value\":\"$INPUT_VALUE\"}]}" > /tmp/dashboard.json
+    echo "{\"dashboard\":$dashboard_json,\"overwrite\":true,\"inputs\":[{\"name\":\"$INPUT_NAME\",\"type\":\"$INPUT_TYPE\",\"pluginId\":\"$INPUT_PLUGIN_ID\",\"value\":\"$INPUT_VALUE\"}]}" >/tmp/dashboard.json
 
     # Importation du dashboard sur Grafana
-    curl -s -X POST -H "Content-Type: application/json" -d @/tmp/dashboard.json "$GRAFANA_URL/api/dashboards/import" > /dev/null 2> /dev/null
+    curl -s -X POST -H "Content-Type: application/json" -d @/tmp/dashboard.json "$GRAFANA_URL/api/dashboards/import" >/dev/null 2>/dev/null
 
     # Nettoyage des fichiers temporaires
     rm /tmp/dashboard.json
@@ -194,7 +197,7 @@ script_path=$(dirname "$(realpath "$0")")
 
 # Création d'une clé SSH pour l'utilisateur root pour les taches cron
 ssh-keygen -t ed25519 -f /root/.ssh/id_cron -q -N ""
-ssh-copy-id -i /root/.ssh/id_cron.pub "$SERVER_USER@$SERVER_IP" > /dev/null 2> /dev/null
+ssh-copy-id -i /root/.ssh/id_cron.pub "$SERVER_USER@$SERVER_IP" >/dev/null 2>/dev/null
 
 # Création du répertoire "shared" dans le répertoire /home appartenant à root
 # avec tous les droits pour tout le monde
@@ -208,7 +211,7 @@ ssh "$SERVER_USER@$SERVER_IP" chown "$SERVER_USER:$SERVER_USER" "$SAVES_DIR"
 ssh "$SERVER_USER@$SERVER_IP" chmod 777 "$SAVES_DIR"
 
 # Création du script de restauration de sauvegarde
-cat << EOF > /home/retablir_sauvegarde
+cat <<EOF >/home/retablir_sauvegarde
 #!/bin/sh
 
 # Récupération de l'utilisateur courant
@@ -246,7 +249,7 @@ ufw deny proto udp from any to any
 ssh "$SERVER_USER@$SERVER_IP" "$(declare -f nextcloud_install); nextcloud_install"
 
 # Création du script de tunnel SSH
-cat << EOF > /home/tunnel_ssh
+cat <<EOF >/home/tunnel_ssh
 #!/bin/sh
 
 # Création du tunnel SSH
@@ -273,11 +276,11 @@ while IFS=';' read -r name surname mail password; do
 
     # Création de l'utilisateur
     adduser --home "/home/$username" \
-            --shell /bin/bash \
-            --disabled-password \
-            --gecos "$name $surname" \
-            --quiet \
-            "$username"
+        --shell /bin/bash \
+        --disabled-password \
+        --gecos "$name $surname" \
+        --quiet \
+        "$username"
 
     # Modification du mot de passe de l'utilisateur
     echo "$username:$password" | chpasswd
@@ -293,7 +296,7 @@ while IFS=';' read -r name surname mail password; do
     chown -R "$username:$username" "/home/$username/.ssh"
 
     # Ajout de la clé publique de l'utilisateur dans le fichier authorized_keys distant
-    ssh-copy-id -i "/home/$username/.ssh/id_ed25519.pub" $SERVER_USER@$SERVER_IP > /dev/null 2> /dev/null
+    ssh-copy-id -i "/home/$username/.ssh/id_ed25519.pub" $SERVER_USER@$SERVER_IP >/dev/null 2>/dev/null
 
     # Création du répertoire "a_sauver" dans le répertoire personnel de l'utilisateur
     mkdir "/home/$username/a_sauver"
@@ -304,7 +307,7 @@ while IFS=';' read -r name surname mail password; do
     # nouvellement créé
     send_mail "$name" "$surname" "$username" "$password" "$mail"
 
-    # Tout les jours de la semaine hors week-end à 23h, on compressera le 
+    # Tout les jours de la semaine hors week-end à 23h, on compressera le
     # répertoire "a_sauver" de l'utilisateur et on le copiera sur la machine distante
     # dans le répertoire "saves". Le fichier sera nommé "save-<utilisateur>.tgz"
     # et doit écraser le fichier précédent s'il existe.
@@ -314,4 +317,4 @@ while IFS=';' read -r name surname mail password; do
     # Ajout de l'utilisateur à Nextcloud sur le serveur distant
     ssh "$SERVER_USER@$SERVER_IP" "$(declare -f nextcloud_add_user); nextcloud_add_user \"$name\" \"$surname\" \"$username\" \"$password\""
 
-done < "$script_path/accounts.csv"
+done <"$script_path/accounts.csv"
