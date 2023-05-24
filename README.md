@@ -1,5 +1,15 @@
 # Projet Linux
 
+Le but de ce projet est de mettre à profit les connaissances acquises durant
+les cours et les travaux pratiques de Linux et utiliser des outils que nous
+n'avons pas vu en cours de manière autonome.
+Dans ce projet, nous devons créer un script de déploiement de comptes pour une
+liste d'utilisateurs donnée dans un fichier CSV.
+
+Ce projet a également du être versionné avec Git et hébergé sur un dépôt Git
+distant. Pour cela, j'ai utilisé Github. Le dépôt est accessible à l'adresse
+suivante : https://github.com/sehnryr/A3-projet-Linux
+
 ## Sommaire
 - [Projet Linux](#projet-linux)
   - [Sommaire](#sommaire)
