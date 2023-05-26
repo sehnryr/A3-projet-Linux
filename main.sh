@@ -89,7 +89,8 @@ eclipse_install() {
     # Installation de curl si nécessaire
     apt install -y curl
 
-    # Récupération de la dernière version d'Eclipse IDE for Java Developers depuis le site officiel pour Linux 64-bit
+    # Récupération de la dernière version d'Eclipse IDE for Java Developers
+    # depuis le site officiel pour Linux 64-bit
     curl https://www.eclipse.org/downloads/packages/ -o /tmp/eclipse.html
     eclipse_url=$(grep -oP "/technology/epp/downloads/release/[^/]+/R/eclipse-java-[^/]+-R-linux-gtk-x86_64.tar.gz" /tmp/eclipse.html | head -n 1)
     eclipse_url="https://www.eclipse.org/downloads/download.php?file=$eclipse_url&r=1"
@@ -198,8 +199,13 @@ EOF
     DATASOURCE_URL="http://localhost:9090"
 
     # Création de la source de données Prometheus sur Grafana
-    curl -s -X POST -H "Content-Type:application/json" \
-        -d "{\"name\":\"$DATASOURCE_NAME\",\"type\":\"$DATASOURCE_TYPE\",\"url\":\"$DATASOURCE_URL\",\"access\":\"proxy\",\"basicAuth\":false}" \
+    curl -s -X POST -H "Content-Type:application/json" -d "{\
+            \"name\":\"$DATASOURCE_NAME\",\
+            \"type\":\"$DATASOURCE_TYPE\",\
+            \"url\":\"$DATASOURCE_URL\",\
+            \"access\":\"proxy\",\
+            \"basicAuth\":false\
+        }" \
         "$GRAFANA_URL/api/datasources"
 
     # Récupération de l'ID et de l'UID de la source de données Prometheus sur Grafana
@@ -216,7 +222,15 @@ EOF
 
     # Création du fichier JSON de configuration du dashboard
     dashboard_json=$(curl -s -X GET "$GRAFANA_URL/api/gnet/dashboards/$DASHBOARD_ID" | jq '.json')
-    echo "{\"dashboard\":$dashboard_json,\"overwrite\":true,\"inputs\":[{\"name\":\"$INPUT_NAME\",\"type\":\"$INPUT_TYPE\",\"pluginId\":\"$INPUT_PLUGIN_ID\",\"value\":\"$INPUT_VALUE\"}]}" >/tmp/dashboard.json
+    echo "{\
+        \"dashboard\":$dashboard_json,\
+        \"overwrite\":true,\
+        \"inputs\":[{\
+            \"name\":\"$INPUT_NAME\",\
+            \"type\":\"$INPUT_TYPE\",\
+            \"pluginId\":\"$INPUT_PLUGIN_ID\",\
+            \"value\":\"$INPUT_VALUE\"}]\
+        }" >/tmp/dashboard.json
 
     # Importation du dashboard sur Grafana
     curl -s -X POST -H "Content-Type: application/json" -d @/tmp/dashboard.json "$GRAFANA_URL/api/dashboards/import"
@@ -247,8 +261,8 @@ ssh "$SERVER_USER@$SERVER_IP" chown "$SERVER_USER:$SERVER_USER" "$SAVES_DIR"
 ssh "$SERVER_USER@$SERVER_IP" chmod 777 "$SAVES_DIR"
 
 # Tout les jours de la semaine hors week-end à 23h, on compressera le
-# répertoire "a_sauver" de chaque utilisateur et on le copiera sur la machine 
-# distante dans le répertoire "saves". Le fichier sera nommé 
+# répertoire "a_sauver" de chaque utilisateur et on le copiera sur la machine
+# distante dans le répertoire "saves". Le fichier sera nommé
 # "save-<utilisateur>.tgz" et doit écraser le fichier précédent s'il existe.
 add_cron "0 23 * * 1-5 \
     for h in /home/*; do \
@@ -362,11 +376,14 @@ while IFS=';' read -r name surname mail password; do
     chown "$username:$username" "/home/$username/a_sauver"
     chmod 755 "/home/$username/a_sauver" # Permissions par défaut
 
-    # Envoi d'un mail à l'adresse du destinataire avec les informations de connexion de l'utilisateur nouvellement créé
+    # Envoi d'un mail à l'adresse du destinataire avec les informations de
+    # connexion de l'utilisateur nouvellement créé
     ssh -n "$SERVER_USER@$SERVER_IP" "$(declare -f send_mail); send_mail \
-        \"$name\" \"$surname\" \"$username\" \"$password\" \"$mail\" \"$SENDER_EMAIL\" \"$SMTP_LOGIN\" \"$SMTP_PASSWORD\" \"$SMTP_SERVER\" \"$SERVER_IP\""
+        \"$name\" \"$surname\" \"$username\" \"$password\" \"$mail\" \
+        \"$SENDER_EMAIL\" \"$SMTP_LOGIN\" \"$SMTP_PASSWORD\" \"$SMTP_SERVER\" \"$SERVER_IP\""
 
     # Ajout de l'utilisateur à Nextcloud sur le serveur distant
-    ssh -n "$SERVER_USER@$SERVER_IP" "$(declare -f nextcloud_add_user); nextcloud_add_user \"$name\" \"$surname\" \"$username\" \"$password\""
+    ssh -n "$SERVER_USER@$SERVER_IP" "$(declare -f nextcloud_add_user); nextcloud_add_user \
+        \"$name\" \"$surname\" \"$username\" \"$password\""
 
 done <"$script_path/accounts.csv"
