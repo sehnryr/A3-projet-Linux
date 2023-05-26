@@ -246,6 +246,20 @@ ssh "$SERVER_USER@$SERVER_IP" mkdir "$SAVES_DIR"
 ssh "$SERVER_USER@$SERVER_IP" chown "$SERVER_USER:$SERVER_USER" "$SAVES_DIR"
 ssh "$SERVER_USER@$SERVER_IP" chmod 777 "$SAVES_DIR"
 
+# Tout les jours de la semaine hors week-end à 23h, on compressera le
+# répertoire "a_sauver" de chaque utilisateur et on le copiera sur la machine 
+# distante dans le répertoire "saves". Le fichier sera nommé 
+# "save-<utilisateur>.tgz" et doit écraser le fichier précédent s'il existe.
+add_cron "0 23 * * 1-5 \
+    for h in /home/*; do \
+        USERNAME=\$(basename \"\$h\"); \
+        if [ -d \"/home/\$USERNAME/a_sauver\" ]; then \
+            tar -czf \"/tmp/save_\$USERNAME.tgz\" --directory=\"/home/\$USERNAME/a_sauver\" .; \
+        fi; \
+    done; \
+    scp -i /root/.ssh/id_cron -p /tmp/save_*.tgz \"$SERVER_USER@$SERVER_IP:$SAVES_DIR/\"; \
+    rm /tmp/save_*.tgz"
+
 # Création du script de restauration de sauvegarde
 cat <<EOF >/home/retablir_sauvegarde
 #!/bin/sh
@@ -351,13 +365,6 @@ while IFS=';' read -r name surname mail password; do
     # Envoi d'un mail à l'adresse du destinataire avec les informations de connexion de l'utilisateur nouvellement créé
     ssh -n "$SERVER_USER@$SERVER_IP" "$(declare -f send_mail); send_mail \
         \"$name\" \"$surname\" \"$username\" \"$password\" \"$mail\" \"$SENDER_EMAIL\" \"$SMTP_LOGIN\" \"$SMTP_PASSWORD\" \"$SMTP_SERVER\" \"$SERVER_IP\""
-
-    # Tout les jours de la semaine hors week-end à 23h, on compressera le
-    # répertoire "a_sauver" de l'utilisateur et on le copiera sur la machine distante
-    # dans le répertoire "saves". Le fichier sera nommé "save-<utilisateur>.tgz"
-    # et doit écraser le fichier précédent s'il existe.
-    add_cron "0 23 * * 1-5 tar -cz --directory=/home/$username/a_sauver . | \
-        ssh $SERVER_USER@$SERVER_IP -i /root/.ssh/id_cron 'cat > $SAVES_DIR/save-$username.tgz'"
 
     # Ajout de l'utilisateur à Nextcloud sur le serveur distant
     ssh -n "$SERVER_USER@$SERVER_IP" "$(declare -f nextcloud_add_user); nextcloud_add_user \"$name\" \"$surname\" \"$username\" \"$password\""
